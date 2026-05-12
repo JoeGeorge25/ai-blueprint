@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Local Lead Hunter AI - Free OpenClaw Skill</title>
+<meta name="description" content="Find local businesses with weak marketing and push them into your sales pipeline automatically.">
+<style>
+:root {
+  --c1: #ffb400;
+  --c2: #ff7a00;
+  --c3: #e69500;
+  --bg: #07142d;
+  --bg2: #0a1a3a;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: var(--bg);
+  color: #fff;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+/* Aurora blobs */
+.aurora {
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+.aurora-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.15;
+  animation: auroraFloat 20s ease-in-out infinite;
+}
+.aurora-blob:nth-child(1) {
+  width: 500px; height: 500px;
+  background: var(--c1);
+  top: -10%; left: -10%;
+  animation-delay: 0s;
+}
+.aurora-blob:nth-child(2) {
+  width: 400px; height: 400px;
+  background: var(--c2);
+  bottom: -10%; right: -10%;
+  animation-delay: -7s;
+}
+.aurora-blob:nth-child(3) {
+  width: 350px; height: 350px;
+  background: var(--c3);
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  animation-delay: -14s;
+}
+.aurora-blob:nth-child(4) {
+  width: 200px; height: 200px;
+  background: #00e5ff;
+  top: 70%; left: 10%;
+  opacity: 0.08;
+  animation-delay: -5s;
+}
+.aurora-blob:nth-child(5) {
+  width: 150px; height: 150px;
+  background: #7c3aed;
+  top: 20%; right: 25%;
+  opacity: 0.06;
+  animation-delay: -10s;
+}
+@keyframes auroraFloat {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(30px, -30px) scale(1.1); }
+  66% { transform: translate(-20px, 20px) scale(0.9); }
+}
+.container {
+  position: relative;
+  z-index: 1;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 60px 24px;
+}
+.badge {
+  display: inline-block;
+  background: rgba(255,180,0,0.15);
+  border: 1px solid rgba(255,180,0,0.3);
+  color: var(--c1);
+  padding: 6px 16px;
+  border-radius: 100px;
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 20px;
+}
+h1 {
+  font-size: clamp(36px, 6vw, 56px);
+  font-weight: 800;
+  line-height: 1.1;
+  margin-bottom: 16px;
+  background: linear-gradient(135deg, #fff 60%, rgba(255,255,255,0.6));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.subhead {
+  font-size: 18px;
+  line-height: 1.6;
+  color: rgba(255,255,255,0.7);
+  margin-bottom: 32px;
+  max-width: 600px;
+}
+.bullets {
+  list-style: none;
+  margin-bottom: 40px;
+}
+.bullets li {
+  padding: 10px 0;
+  font-size: 16px;
+  color: rgba(255,255,255,0.85);
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+.bullets li::before {
+  content: "✓";
+  color: var(--c1);
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.cta-btn {
+  display: inline-block;
+  background: linear-gradient(135deg, var(--c1), var(--c2));
+  color: #fff;
+  padding: 16px 40px;
+  border-radius: 12px;
+  font-size: 18px;
+  font-weight: 700;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.cta-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(255,180,0,0.3);
+}
+/* Product showcase — glassmorphism container */
+.showcase-wrap {
+  margin: 48px auto;
+  max-width: 800px;
+  position: relative;
+  text-align: center;
+}
+/* Outer glass frame */
+.showcase-frame {
+  position: relative;
+  border-radius: 24px;
+  padding: 10px;
+  background: linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,0.04);
+  box-shadow:
+    0 24px 80px rgba(0,0,0,0.5),
+    0 8px 24px rgba(0,0,0,0.3),
+    inset 0 1px 0 rgba(255,255,255,0.04);
+  overflow: hidden;
+}
+/* Dark overlay behind the image to kill white brightness */
+.showcase-overlay {
+  position: absolute;
+  inset: 0;
+  border-radius: 24px;
+  background: linear-gradient(135deg,
+    rgba(7,20,45,0.25) 0%,
+    rgba(10,26,58,0.15) 30%,
+    rgba(7,20,45,0.25) 70%,
+    rgba(10,10,30,0.35) 100%
+  );
+  pointer-events: none;
+  z-index: 2;
+  mix-blend-mode: multiply;
+}
+/* Purple/blue glow edges */
+.showcase-glow {
+  position: absolute;
+  width: 70%;
+  height: 60%;
+  background: radial-gradient(ellipse at 30% 40%, rgba(124,58,237,0.10), transparent 60%),
+              radial-gradient(ellipse at 70% 60%, rgba(0,229,255,0.06), transparent 50%);
+  top: 20%;
+  left: 15%;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0;
+  animation: glowFade 1.5s ease 0.3s forwards;
+  mix-blend-mode: screen;
+}
+.showcase-img {
+  width: 100%;
+  height: auto;
+  border-radius: 16px;
+  display: block;
+  position: relative;
+  z-index: 1;
+  opacity: 0;
+  transform: translateY(20px);
+  animation: fadeInUp 0.8s ease 0.3s forwards;
+  filter: brightness(0.92) saturate(0.95) contrast(1.05);
+}
+.showcase-img.loaded {
+  animation: fadeInUp 0.8s ease 0.3s forwards, softFloat 4s ease-in-out 1.8s infinite;
+}
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes softFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+@keyframes glowFade {
+  to { opacity: 1; }
+}
+@media (max-width: 600px) {
+  .showcase-wrap {
+    margin: 32px auto;
+  }
+  .showcase-frame {
+    padding: 6px;
+    border-radius: 20px;
+  }
+  .showcase-overlay {
+    border-radius: 20px;
+  }
+  .showcase-img {
+    border-radius: 14px;
+  }
+}
+.section {
+  margin-top: 80px;
+}
+.section h2 {
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+.section p {
+  color: rgba(255,255,255,0.6);
+  line-height: 1.6;
+  margin-bottom: 24px;
+}
+.feature-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 24px;
+}
+@media (max-width: 600px) {
+  .feature-grid { grid-template-columns: 1fr; }
+}
+.feature-card {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
+  padding: 24px;
+}
+.feature-card h3 {
+  font-size: 17px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+.feature-card p {
+  font-size: 14px;
+  color: rgba(255,255,255,0.55);
+  margin-bottom: 0;
+}
+/* Access card */
+.access-card {
+  background: linear-gradient(135deg, rgba(255,180,0,0.08), rgba(255,122,0,0.08));
+  border: 1px solid rgba(255,180,0,0.2);
+  border-radius: 20px;
+  padding: 32px;
+  margin-top: 24px;
+  text-align: center;
+}
+.access-card h3 {
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+.access-card p {
+  color: rgba(255,255,255,0.6);
+  margin-bottom: 24px;
+}
+/* Modal */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(4px);
+  z-index: 100;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+.modal-overlay.active { display: flex; }
+.modal {
+  background: #0a1a3a;
+  border: 1px solid rgba(255,180,0,0.3);
+  border-radius: 20px;
+  padding: 40px;
+  max-width: 440px;
+  width: 100%;
+  position: relative;
+}
+.modal h2 {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+.modal p {
+  color: rgba(255,255,255,0.6);
+  font-size: 14px;
+  margin-bottom: 24px;
+}
+.form-group {
+  margin-bottom: 16px;
+}
+.form-group label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.7);
+  margin-bottom: 6px;
+}
+.form-group input {
+  width: 100%;
+  padding: 12px 16px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 10px;
+  color: #fff;
+  font-size: 15px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.form-group input:focus {
+  border-color: var(--c1);
+}
+.submit-btn {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(135deg, var(--c1), var(--c2));
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+.submit-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.close-modal {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: none;
+  border: none;
+  color: rgba(255,255,255,0.4);
+  font-size: 24px;
+  cursor: pointer;
+}
+.perks {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 20px;
+}
+.perk {
+  background: rgba(255,255,255,0.04);
+  border-radius: 10px;
+  padding: 12px;
+  text-align: center;
+  font-size: 13px;
+  color: rgba(255,255,255,0.7);
+}
+.perk strong {
+  color: #fff;
+  display: block;
+  margin-bottom: 2px;
+}
+.footer {
+  margin-top: 60px;
+  text-align: center;
+  font-size: 13px;
+  color: rgba(255,255,255,0.3);
+}
+.spinner {
+  display: none;
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+  margin: 0 auto;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.submit-btn .spinner.active { display: inline-block; }
+.submit-btn .btn-text { display: inline; }
+.submit-btn .btn-text.hidden { display: none; }
+</style>
+</head>
+<body>
+<div class="aurora">
+  <div class="aurora-blob"></div>
+  <div class="aurora-blob"></div>
+  <div class="aurora-blob"></div>
+</div>
+
+<div class="container">
+  <div class="badge">FREE AI SKILL</div>
+  <h1>Local Lead Hunter AI</h1>
+  <p class="subhead">Find local businesses that need your help — score them, get their emails, and close deals on autopilot.</p>
+  <ul class="bullets">
+    <li>Scrapes Google Maps to find your perfect prospects in any city</li>
+    <li>Scores every lead Hot/Warm/Cold so you know who to call first</li>
+    <li>Enriches with emails via Hunter.io and pushes straight to your CRM</li>
+  </ul>
+  <button class="cta-btn" onclick="openModal()">Get Your Free Skill →</button>
+
+  <div class="showcase-wrap">
+    <div class="showcase-glow"></div>
+    <div class="showcase-frame">
+      <div class="showcase-overlay"></div>
+      <img
+        class="showcase-img"
+        src="https://assets.cdn.filesafe.space/tkbxbXVP7mHJMAvQLiKm/media/6a02dcdc82125b98745d8e9d.png"
+        alt="Local Lead Hunter AI - Lead generation dashboard preview"
+        loading="lazy"
+        onload="this.classList.add('loaded')"
+      >
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>Stop chasing dead leads.</h2>
+    <p>You're a service provider or sales pro. You know there are hundreds of businesses in your city that desperately need what you offer — roof repairs, marketing, IT, cleaning, you name it. But finding them, getting their info, and reaching out manually takes forever.</p>
+    <p>Local Lead Hunter AI does the digging for you. Tell it where to look, and it comes back with a ranked list of prospects ready to be contacted.</p>
+  </div>
+
+  <div class="feature-grid">
+    <div class="feature-card">
+      <h3>🎯 Smart Scoring</h3>
+      <p>Every lead gets a Hot/Warm/Low score based on website quality, review count, and online presence. Know exactly who's most likely to buy.</p>
+    </div>
+    <div class="feature-card">
+      <h3>📬 Email Enrichment</h3>
+      <p>Finds email addresses for each business automatically via Hunter.io. No more digging through websites trying to find a contact form.</p>
+    </div>
+  </div>
+
+  <div class="access-card">
+    <h3>Get Local Lead Hunter AI Free</h3>
+    <p>Install it on any OpenClaw agent. Works right out of the box — no coding required.</p>
+    <button class="cta-btn" onclick="openModal()">Get Your Free Copy →</button>
+  </div>
+
+  <div class="footer">
+    OpenClaw Skill · Free Download
+  </div>
+</div>
+
+<!-- Opt-in Modal -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <button class="close-modal" onclick="closeModal()">✕</button>
+    <h2>Get Your Free Skill</h2>
+    <p>Drop your name and email below, and we'll send you the download link instantly.</p>
+    <form id="subscribeForm">
+      <div class="form-group">
+        <label for="name">Your Name</label>
+        <input type="text" id="name" placeholder="Enter your name" required>
+      </div>
+      <div class="form-group">
+        <label for="email">Email Address</label>
+        <input type="email" id="email" placeholder="Enter your best email" required>
+      </div>
+      <button type="submit" class="submit-btn" id="submitBtn">
+        <span class="btn-text">Send Me The Skill →</span>
+        <div class="spinner" id="spinner"></div>
+      </button>
+    </form>
+    <div class="perks">
+      <div class="perk"><strong>Local Lead Hunter AI</strong>Searches any city instantly</div>
+      <div class="perk"><strong>Lifetime Access</strong>Yours forever</div>
+      <div class="perk"><strong>Instant Install</strong>Works in 2 minutes</div>
+      <div class="perk"><strong>Free Updates</strong>Always current</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const DROPBOX_URL = 'https://github.com/JoeGeorge25/ai-blueprint/releases/download/v1.0.0/local-lead-hunter-ai.zip';
+
+function downloadSkill() {
+  const a = document.createElement('a');
+  a.href = DROPBOX_URL;
+  a.download = '';
+  a.rel = 'noopener noreferrer';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
+function openModal() {
+  document.getElementById('modal').classList.add('active');
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('active');
+}
+
+document.getElementById('modal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+document.getElementById('subscribeForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  const name = document.getElementById('name').value.trim();
+  const email = document.getElementById('email').value.trim();
+  if (!name || !email) return;
+
+  const btn = document.getElementById('submitBtn');
+  const btnText = btn.querySelector('.btn-text');
+  const spinner = document.getElementById('spinner');
+  btnText.classList.add('hidden');
+  spinner.classList.add('active');
+  btn.disabled = true;
+
+  try {
+    sessionStorage.setItem('subscriber_name', name);
+    sessionStorage.setItem('subscriber_email', email);
+
+    // Send to AWeber silently via fetch POST with no-cors
+    // (This drops the subscriber into AWeber without a redirect)
+    fetch('https://www.aweber.com/scripts/addlead.pl', {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        'name': name,
+        'email': email,
+        'meta_web_form_id': '1065437976',
+        'meta_split_id': '',
+        'listname': 'awlist6955316',
+        'redirect': 'https://local-lead-hunter-ai.vercel.app/thank-you.html',
+        'meta_redirect_onlist': 'https://local-lead-hunter-ai.vercel.app/thank-you.html',
+        'meta_adtracking': 'Skill_Package_Landing_Page',
+        'meta_message': '1',
+        'meta_required': 'name,email',
+        'source': 'Skill Package Landing Page',
+        'tag': 'skill-package-lead'
+      })
+    }).catch(function() {});
+
+    // Redirect to our own thank-you page
+    window.location.href = '/thank-you.html';
+  } catch (err) {
+    btnText.classList.remove('hidden');
+    spinner.classList.remove('active');
+    btn.disabled = false;
+  }
+});
+</script>
+</body>
+</html>
